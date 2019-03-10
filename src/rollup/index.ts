@@ -155,10 +155,7 @@ export default function rollup(rawInputOptions: GenericConfigObject): Promise<Ro
 				)
 			)
 			.then(
-				chunks =>
-					graph.pluginDriver.hookParallel('buildEnd').then(() => {
-						return chunks;
-					}),
+				chunks => graph.pluginDriver.hookParallel('buildEnd').then(() => chunks),
 				err =>
 					graph.pluginDriver.hookParallel('buildEnd', [err]).then(() => {
 						throw err;
@@ -319,9 +316,9 @@ export default function rollup(rawInputOptions: GenericConfigObject): Promise<Ro
 									});
 							}
 							return Promise.all(
-								Object.keys(bundle).map(chunkId => {
-									return writeOutputFile(graph, result, bundle[chunkId], outputOptions);
-								})
+								Object.keys(bundle).map(chunkId =>
+									writeOutputFile(graph, result, bundle[chunkId], outputOptions)
+								)
 							)
 								.then(() => graph.pluginDriver.hookParallel('writeBundle', [bundle]))
 								.then(() => createOutput(bundle));
