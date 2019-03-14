@@ -92,6 +92,7 @@ export default class Graph {
 	isExternal: IsExternal;
 	isPureExternalModule: (id: string) => boolean;
 	moduleById = new Map<string, Module | ExternalModule>();
+	moduleLoader: ModuleLoader;
 	modules: Module[] = [];
 	needsTreeshakingPass: boolean = false;
 	onwarn: WarningHandler;
@@ -219,6 +220,7 @@ export default class Graph {
 				: [])
 		);
 		this.acornParser = <any>acorn.Parser.extend(...acornPluginsToInject);
+		this.moduleLoader = new ModuleLoader(this, this.moduleById, this.pluginDriver);
 	}
 
 	build(
@@ -231,12 +233,11 @@ export default class Graph {
 		// of the entry module's dependencies
 
 		timeStart('parse modules', 2);
-		const moduleLoader = new ModuleLoader(this, this.moduleById);
 
 		if (manualChunks) {
-			moduleLoader.addManualChunks(manualChunks);
+			this.moduleLoader.addManualChunks(manualChunks);
 		}
-		return moduleLoader
+		return this.moduleLoader
 			.addEntryModules(normalizeEntryModules(entryModules))
 			.then(({ entryModulesWithAliases, manualChunkModulesByAlias }) => {
 				for (const module of Array.from(this.moduleById.values())) {
